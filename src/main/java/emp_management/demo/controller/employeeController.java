@@ -1,9 +1,10 @@
 package emp_management.demo.controller;
 
 
+
+
 import com.itextpdf.html2pdf.ConverterProperties;
 import com.itextpdf.html2pdf.HtmlConverter;
-import com.itextpdf.io.source.ByteArrayOutputStream;
 import emp_management.demo.exception.resourceNotFoundException;
 import emp_management.demo.model.employee;
 import emp_management.demo.repository.employeeRepo;
@@ -15,9 +16,11 @@ import org.springframework.web.bind.annotation.*;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.WebContext;
 
+
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -48,6 +51,7 @@ public class employeeController {
 
     @PostMapping("/add")
     public employee createemployee(@RequestBody employee Employee) {
+
         return EmployeeRepo.save(Employee);
     }
 
@@ -85,7 +89,7 @@ public class employeeController {
     }
 
     @GetMapping("/employees/pdf/{id}")
-    public ResponseEntity<?> getPDF(@PathVariable("id") Long id, HttpServletRequest request, HttpServletResponse response) throws IOException {
+    public ResponseEntity<byte[]> getPDF(@PathVariable("id") Long id, HttpServletRequest request, HttpServletResponse response) throws IOException {
 
         /* Do Business Logic*/
 
@@ -104,7 +108,8 @@ public class employeeController {
 
         /*Setup converter properties. */
         ConverterProperties converterProperties = new ConverterProperties();
-        converterProperties.setBaseUri("http://localhost:8080");
+        //converterProperties.setCharset("UTF-8");
+       // converterProperties.setBaseUri("http://localhost:8080");
 
         /* Call convert method */
         HtmlConverter.convertToPdf(employeeHTML, target, converterProperties);
@@ -120,42 +125,66 @@ public class employeeController {
                 .contentType(MediaType.APPLICATION_PDF)
                 .body(bytes);
 
+//        try {
+//            ClassLoaderTemplateResolver templateResolver = new ClassLoaderTemplateResolver();
+//            templateResolver.setSuffix(".html");
+//            templateResolver.setTemplateMode("HTML");
+//            TemplateEngine templateEngine = new TemplateEngine();
+//            templateEngine.setTemplateResolver(templateResolver);
+//            Context context = new Context();
+//            context.setVariable("employe", Employee);
+//            String html = templateEngine.process("employee", context);
+//            String fileName = "employee.pdf";
+//            response.addHeader("Content-disposition", "attachment;filename=" + fileName);
+//            response.setContentType("application/pdf");
+//            OutputStream outputStream = response.getOutputStream();
+//            ITextRenderer renderer = new ITextRenderer();
+//            renderer.setDocumentFromString(html);
+//            renderer.layout();
+//            renderer.createPDF(outputStream);
+//            outputStream.flush();
+//            outputStream.close();
+//        } catch (Exception ex) {
+//            ex.printStackTrace();
+//        }
+
+
     }
 
-    @GetMapping("/employees/all/pdf")
-    public ResponseEntity<?> getallPDF(HttpServletRequest request, HttpServletResponse response) throws IOException {
-
-        /* Do Business Logic*/
-
-        List<employee> employeeslList =EmployeeRepo.findAll();
-
-        /* Create HTML using Thymeleaf template Engine */
-
-        WebContext context = new WebContext(request, response, servletContext);
-        context.setVariable("employees", employeeslList);
-        String employeesHTML = templateEngine.process("employees", context);
-
-        /* Setup Source and target I/O streams */
-
-        ByteArrayOutputStream target = new ByteArrayOutputStream();
-
-        /*Setup converter properties. */
-        ConverterProperties converterProperties = new ConverterProperties();
-        converterProperties.setBaseUri("http://localhost:8080");
-
-        /* Call convert method */
-        HtmlConverter.convertToPdf(employeesHTML, target, converterProperties);
-
-        /* extract output as bytes */
-        byte[] bytes = target.toByteArray();
-
-
-        /* Send the response as downloadable PDF */
-
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=employees.pdf")
-                .contentType(MediaType.APPLICATION_PDF)
-                .body(bytes);
-
-    }
+//    @GetMapping("/employees/all/pdf")
+//    public ResponseEntity<?> getallPDF(HttpServletRequest request, HttpServletResponse response) throws IOException {
+//
+//        /* Do Business Logic*/
+//
+//        List<employee> employeeslList =EmployeeRepo.findAll();
+//
+//        /* Create HTML using Thymeleaf template Engine */
+//
+//        WebContext context = new WebContext(request, response, servletContext);
+//        context.setVariable("employees", employeeslList);
+//        String employeesHTML = templateEngine.process("employees", context);
+//
+//        /* Setup Source and target I/O streams */
+//
+//        ByteArrayOutputStream target = new ByteArrayOutputStream();
+//
+//        /*Setup converter properties. */
+//        ConverterProperties converterProperties = new ConverterProperties();
+//        converterProperties.setBaseUri("http://localhost:8080");
+//
+//        /* Call convert method */
+//        HtmlConverter.convertToPdf(employeesHTML, target, converterProperties);
+//
+//        /* extract output as bytes */
+//        byte[] bytes = target.toByteArray();
+//
+//
+//        /* Send the response as downloadable PDF */
+//
+//        return ResponseEntity.ok()
+//                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=employees.pdf")
+//                .contentType(MediaType.APPLICATION_PDF)
+//                .body(bytes);
+//
+//    }
 }
